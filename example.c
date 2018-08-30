@@ -21,8 +21,9 @@ void test_callback(void* sender, const char* key, const char* value)
 
 int main(int argc, const char **argv)
 {
-    // Variables that will be set using Argparser
-    // They keep their initial value, if the option is not given.
+    // Variables that will be set using Config_parse().
+    // They keep their initial value, if the config is not given.
+    // String should be NULL and will be allocated inside Config.h.
     bool cBool = 0;
     int cInt = 0;
     double cDouble = 0.f;
