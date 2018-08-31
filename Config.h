@@ -1,6 +1,6 @@
 // Copyright (C) 2018 Martin Weigel <mail@MartinWeigel.com>
 // License: ISC
-// Version: 2018-08-30
+// Version: 2018-08-31
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
@@ -250,6 +250,7 @@ void Config_parse(char* filepath, ConfigItem* items)
         }
         #endif
     }
+    fclose(file);
 
     // Check that all items were successfully read from config
     #ifdef CONFIG_VERBOSE
