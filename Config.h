@@ -18,22 +18,23 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-//******************************************************************************
-// TYPE DEFINITIONS FOR INTERNAL USAGE
-//******************************************************************************
-typedef enum ConfigType ConfigType;
+// Internal type definition. Please use macros to create ConfigItems.
 typedef struct ConfigItem ConfigItem;
+typedef enum ConfigType ConfigType;
 
 
 //******************************************************************************
 // PUBLIC INTERFACE
 //******************************************************************************
 /**
- * Parses the input file.
+ * Parses the input file. If the key of a line matches a ConfigItem, its value
+ * pointer is set to the data inside the config file (for CONFIG_BOOL, CONFIG_INT,
+ * CONFIG_DOUBLE, and CONFIG_STRING) or a function is called (CONFIG_CALLBACK).
+ * For CONFIG_STRING, new memory will be allocated to hold the value. 
  * @filepath:
  *      Path to the configuration file.
  * @items:
- *      Callback to a user-defined function that is called for each valid line.
+ *      Array of config items. All items should be created using macros.
  */
 void Config_parse(char* filepath, ConfigItem* items);
 
