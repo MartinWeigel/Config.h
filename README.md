@@ -20,8 +20,8 @@ int main(int argc, const char **argv)
     int cInt = 0;
     double cDouble = 0.f;
 
-    // Parse config file "example.txt"
-    Config_parse("example.txt", (ConfigItem[]) {
+    // Load values from configuration file to variables
+    Config_load("example.txt", (ConfigItem[]) {
         CONFIG_INT("anInt", &cInt),
         CONFIG_DOUBLE("aDouble", &cDouble),
         CONFIG_END()
@@ -65,6 +65,6 @@ otherspace.key2 = 2
 - Single-header library for easy integration into existing projects
 - Human-readable configuration file format
 - Support of different variable types: `bool`, `int`, `double`, and `string`
-- Simple interface with only one public function: `Config_parse`
+- Simple interface with only one public function: `Config_load`
 - Support of function callbacks for advanced configuration control
 - Liberal license for free and commercial software
