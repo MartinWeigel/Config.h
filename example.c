@@ -37,7 +37,7 @@ void test_callback(void* sender, const char* key, const char* value)
 
 int main(int argc, const char **argv)
 {
-    // Variables that will be set using Config_parse().
+    // Variables that will be set using Config_load().
     // They keep their initial value, if the config is not given.
     // String should be NULL and will be allocated inside Config.h.
     bool cBool = 0;
@@ -47,8 +47,8 @@ int main(int argc, const char **argv)
     const char *cKey1 = NULL;
     const char *cKey2 = NULL;
 
-    // Parse example configuration file
-    Config_parse("example.txt", (ConfigItem[]) {
+    // Load values from configuration file to variables
+    Config_load("example.txt", (ConfigItem[]) {
         CONFIG_BOOL("aBool", &cBool),
         CONFIG_STRING("aString", &cString),
         CONFIG_DOUBLE("aDouble", &cDouble),
@@ -66,8 +66,8 @@ int main(int argc, const char **argv)
     printf("aDouble:  %f\n", cDouble);
     printf("anInt:    %d\n", cInt);
     printf("\n");
-    printf("namespace.key2:   %s\n", cKey2);
     printf("namespace.key1:   %s\n", cKey1);
+    printf("namespace.key2:   %s\n", cKey2);
     printf("otherspace.key1:  %d\n", callbackResult);
     return EXIT_SUCCESS;
 }

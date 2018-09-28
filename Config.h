@@ -36,7 +36,7 @@ typedef enum ConfigType ConfigType;
  * @items:
  *      Array of config items. All items should be created using macros.
  */
-void Config_parse(char* filepath, ConfigItem* items);
+void Config_load(char* filepath, ConfigItem* items);
 
 /**
  * Callback definition for CONFIG_CALLBACK(key, callback).
@@ -170,7 +170,7 @@ char* Config_trimString(char *input)
     return input;
 }
 
-void Config_parse(char* filepath, ConfigItem* items)
+void Config_load(char* filepath, ConfigItem* items)
 {
     // Load the configuration file
     FILE* file = fopen(filepath, "r");
