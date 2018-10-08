@@ -12,7 +12,7 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-// Version: 2018-09-05
+// Version: 2018-10-08
 
 #pragma once
 #include <stdint.h>
@@ -36,7 +36,7 @@ typedef enum ConfigType ConfigType;
  * @items:
  *      Array of config items. All items should be created using macros.
  */
-void Config_load(char* filepath, ConfigItem* items);
+void Config_load(const char* filepath, ConfigItem* items);
 
 /**
  * Callback definition for CONFIG_CALLBACK(key, callback).
@@ -170,7 +170,7 @@ char* Config_trimString(char *input)
     return input;
 }
 
-void Config_load(char* filepath, ConfigItem* items)
+void Config_load(const char* filepath, ConfigItem* items)
 {
     // Load the configuration file
     FILE* file = fopen(filepath, "r");

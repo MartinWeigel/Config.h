@@ -1,5 +1,10 @@
 # Changelog
 
+## 2018-10-08
+### Changed
+- `Config_load()` takes filename as a `const char*` instead of a `char*`
+- The example-callback uses a sender object instead of a global variable
+
 ## 2018-09-28
 ### Added
 - Created changelog file to track updates (`CHANGELOG.md`)
