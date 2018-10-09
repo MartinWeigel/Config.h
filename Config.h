@@ -12,7 +12,7 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-// Version: 2018-10-08
+// Version: 2018-10-09
 
 #pragma once
 #include <stdint.h>
@@ -198,6 +198,13 @@ void Config_load(const char* filepath, ConfigItem* items)
             fprintf(stderr, "[CONFIG] Line %d: Comment '%s'\n", lineNumber, startPointer);
             #endif
             continue;
+        }
+
+        // Check for comment inside the line
+        char* endOfLineComment = strchr(startPointer, CONFIG_COMMENTSIGN);
+        if(endOfLineComment != NULL) {
+            *endOfLineComment = '\0';
+            startPointer = Config_trimString(buffer);
         }
 
         // We have some non-comment content in the line, let's parse

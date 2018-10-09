@@ -1,5 +1,9 @@
 # Changelog
 
+## 2018-10-09
+### Added
+- Support for inline comments: `key = value # Comment`
+
 ## 2018-10-08
 ### Changed
 - `Config_load()` takes filename as a `const char*` instead of a `char*`
