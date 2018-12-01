@@ -32,7 +32,7 @@ typedef enum ConfigType ConfigType;
  * Parses the input file. If the key of a line matches a ConfigItem, its value
  * pointer is set to the data inside the config file.
  * For CONFIG_CALLBACK, a function is called (see Config_callback).
- * For CONFIG_NEW_STRING, new memory will be allocated to hold the value. 
+ * For CONFIG_NEW_STRING, new memory will be allocated for the value. 
  * @filepath:
  *      Path to the configuration file.
  * @items:
@@ -129,8 +129,15 @@ const int CONFIG_BUFFERSIZE = 256;
 const char CONFIG_EQUALSIGN = '=';
 const char CONFIG_COMMENTSIGN = '#';
 
-// Returns read long if it is in bounds, otherwise exits program
-int64_t CONFIG_signedNumberFromString(ConfigItem* item, char* string, int64_t min, int64_t max)
+// SET EXIT MACRO
+#ifdef CONFIG_NO_EXIT_ON_ERROR
+    #define CONFIG_EXIT() (return false)
+#else
+    #define CONFIG_EXIT() (exit(EXIT_FAILURE))
+#endif
+
+// Returns if value is an int in bounds and saves value to output
+bool CONFIG_IntFromString(ConfigItem* item, char* string, int64_t min, int64_t max, int64_t* output)
 {
     errno = 0;
     char* lastParsedChar = NULL;
@@ -138,17 +145,18 @@ int64_t CONFIG_signedNumberFromString(ConfigItem* item, char* string, int64_t mi
     // Check for errors
     if(*lastParsedChar != '\0') {
         printf("[CONFIG] Value for key '%s' is not a number: %s\n", item->key, string);
-        exit(EXIT_FAILURE);
+        CONFIG_EXIT();
     }
     if(errno == ERANGE || longValue < min || longValue > max) {
         printf("[CONFIG] Value for key '%s' is out of bounds [%"PRId64", %"PRId64"]: %s\n", item->key, min, max, string);
-        exit(EXIT_FAILURE);        
+        CONFIG_EXIT();
     }
-    return longValue;
+    *output = longValue;
+    return true;
 }
 
-// Returns read long if it is in bounds, otherwise exits program
-uint64_t CONFIG_unsignedNumberFromString(ConfigItem* item, char* string, uint64_t max)
+// Returns if value is an uint in bounds and saves value to output
+bool CONFIG_uIntFromString(ConfigItem* item, char* string, uint64_t max, uint64_t* output)
 {
     errno = 0;
     char* lastParsedChar = NULL;
@@ -156,87 +164,103 @@ uint64_t CONFIG_unsignedNumberFromString(ConfigItem* item, char* string, uint64_
     // Check for errors
     if(*lastParsedChar != '\0') {
         printf("[CONFIG] Value for key '%s' is not a number: %s\n", item->key, string);
-        exit(EXIT_FAILURE);
+        CONFIG_EXIT();  
     }
     if(errno == ERANGE || string[0] == '-' || longValue > max) {
         printf("[CONFIG] Value for key '%s' is out of bounds [0, %"PRIu64"]: %s\n", item->key, max, string);
-        exit(EXIT_FAILURE);        
+        CONFIG_EXIT();
     }
-    return longValue;
+    *output = longValue;
+    return true;
 }
 
 void Config_handleItem(ConfigItem* item, char* value)
 {
+    int64_t sResult;
+    uint64_t uResult;
     char* lastParsedChar = NULL;
     switch(item->type) {
-        case CONFIGTYPE_INT: {
-            int* output = (int*)item->pointer;
-            *output = CONFIG_signedNumberFromString(item, value, INT_MIN, INT_MAX);
+        case CONFIGTYPE_INT:
+            if(CONFIG_IntFromString(item, value, INT_MIN, INT_MAX, &sResult)) {
+                int* output = item->pointer;
+                *output = sResult;
+            }
             break;
-        }
-        case CONFIGTYPE_INT8: {
-            int8_t* output = (int8_t*)item->pointer;
-            *output = CONFIG_signedNumberFromString(item, value, INT8_MIN, INT8_MAX);
+        case CONFIGTYPE_INT8:
+            if(CONFIG_IntFromString(item, value, INT8_MIN, INT8_MAX, &sResult)) {
+                int8_t* output = item->pointer;
+                *output = sResult;
+            }
             break;
-        }
-        case CONFIGTYPE_INT16: {
-            int16_t* output = (int16_t*)item->pointer;
-            *output = CONFIG_signedNumberFromString(item, value, INT16_MIN, INT16_MAX);
+        case CONFIGTYPE_INT16:
+            if(CONFIG_IntFromString(item, value, INT16_MIN, INT16_MAX, &sResult)) {
+                int16_t* output = item->pointer;
+                *output = sResult;
+            }
             break;
-        }
-        case CONFIGTYPE_INT32: {
-            int32_t* output = (int32_t*)item->pointer;
-            *output = CONFIG_signedNumberFromString(item, value, INT32_MIN, INT32_MAX);
+        case CONFIGTYPE_INT32:
+            if(CONFIG_IntFromString(item, value, INT32_MIN, INT32_MAX, &sResult)) {
+                int32_t* output = item->pointer;
+                *output = sResult;
+            }
             break;
-        }
-        case CONFIGTYPE_INT64: {
-            int64_t* output = (int64_t*)item->pointer;
-            *output = CONFIG_signedNumberFromString(item, value, INT64_MIN, INT64_MAX);
+        case CONFIGTYPE_INT64:
+            if(CONFIG_IntFromString(item, value, INT64_MIN, INT64_MAX, &sResult)) {   
+                int64_t* output = item->pointer;
+                *output = sResult;
+            }
             break;
-        }
-        case CONFIGTYPE_BOOL: {
-            bool* output = (bool*)item->pointer;
-            *output = CONFIG_unsignedNumberFromString(item, value, 1);
+        case CONFIGTYPE_BOOL:
+            if(CONFIG_uIntFromString(item, value, 1, &uResult)) {
+                bool* output = item->pointer;
+                *output = uResult;
+            }
             break;
-        }
-        case CONFIGTYPE_UINT8: {
-            uint8_t* output = (uint8_t*)item->pointer;
-            *output = CONFIG_unsignedNumberFromString(item, value, UINT8_MAX);
+        case CONFIGTYPE_UINT8:
+            if(CONFIG_uIntFromString(item, value, UINT8_MAX, &uResult)) {
+                uint8_t* output = item->pointer;
+                *output = uResult;
+            }
             break;
-        }
-        case CONFIGTYPE_UINT16: {
-            uint16_t* output = (uint16_t*)item->pointer;
-            *output = CONFIG_unsignedNumberFromString(item, value, UINT16_MAX);
+        case CONFIGTYPE_UINT16:
+            if(CONFIG_uIntFromString(item, value, UINT16_MAX, &uResult)) {
+                uint16_t* output = item->pointer;
+                *output = uResult;
+            }
             break;
-        }
-        case CONFIGTYPE_UINT32: {
-            uint32_t* output = (uint32_t*)item->pointer;
-            *output = CONFIG_unsignedNumberFromString(item, value, UINT32_MAX);
+        case CONFIGTYPE_UINT32:
+            if(CONFIG_uIntFromString(item, value, UINT32_MAX, &uResult)) {
+                uint32_t* output = item->pointer;
+                *output = uResult;
+            }
             break;
-        }
-        case CONFIGTYPE_UINT64: {
-            uint64_t* output = (uint64_t*)item->pointer;
-            *output = CONFIG_unsignedNumberFromString(item, value, UINT64_MAX);
+        case CONFIGTYPE_UINT64:
+            if(CONFIG_uIntFromString(item, value, UINT64_MAX, &uResult)) {
+                uint64_t* output = item->pointer;
+                *output = uResult;
+            }
             break;
-        }
         case CONFIGTYPE_DOUBLE: {
-            double* output = (double*)item->pointer;
-            *output = strtod(value, &lastParsedChar);
+            double result = strtod(value, &lastParsedChar);
             // Check for errors
             if(*lastParsedChar != '\0') {
                 printf("[CONFIG] Value for key '%s' is not an double: %s\n", item->key, value);
-                exit(EXIT_FAILURE);
+                CONFIG_EXIT();
+            } else {
+                double* output = (double*)item->pointer;
+                *output = result;
             }
             break;
         }
         case CONFIGTYPE_STRING: {
-            char* output = (char*)item->pointer;
             // Check if allocated size (string + '\0') is big enough
             if(strlen(value) + 1 > item->stringSize) {
                 printf("[CONFIG] String size is too large for key '%s' (size: %I64d): %s\n", item->key, item->stringSize, value);
-                exit(EXIT_FAILURE);
+                CONFIG_EXIT();
+            } else {
+                char* output = (char*)item->pointer;
+                strcpy(output, value);
             }
-            strcpy(output, value);
             break;
         }
         case CONFIGTYPE_NEW_STRING: {
@@ -252,10 +276,11 @@ void Config_handleItem(ConfigItem* item, char* value)
         } 
         default:
             fprintf(stderr, "[CONFIG] Invalid config type: %d\n", item->type);
-            exit(EXIT_FAILURE);
+            CONFIG_EXIT();
     }
 }
 
+// Removes all whitespace by modifying string and returning new start pointer
 char* Config_trimString(char *input)
 {
     // Trim leading space

@@ -6,6 +6,7 @@
 - Support of already allocated strings (`CONFIG_STRING`)
 - Support of non-allocated strings (`CONFIG_NEW_STRING`)
 - Finer control over verbose output with `CONFIG_VERBOSE_DUPLICATE`, `CONFIG_VERBOSE_MISSING`, and `CONFIG_VERBOSE_UNUSED`
+- New preprocessor definition `CONFIG_NO_EXIT_ON_ERROR` omits exit for parsing errors
 
 ### Changed
 - `CONFIG_STRING` changed behavior and will require refactoring to `CONFIG_NEW_STRING`

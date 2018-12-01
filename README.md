@@ -70,6 +70,7 @@ otherspace.key1 = 1
 otherspace.key2 = 2
 ```
 
+
 ## Preprocessor Definitions
 
 A few preprocessor definitions can be set to control the behavior of `Config.h`.
@@ -82,4 +83,5 @@ They need to be set *before* including `Config.h`.
 `CONFIG_VERBOSE_DUPLICATE` | Prints to stderr, if config file contains the same key more than once.
 `CONFIG_VERBOSE_MISSING` | Prints to stderr, if config file does not contain a key specified as CONFIG_ITEM.
 `CONFIG_VERBOSE_UNUSED` | Prints to stderr, if config file contains keys not used by the application.
+`CONFIG_NO_EXIT_ON_ERROR` | No application exit on a parsing error (but output to stderr). The erroneous config will not be set to the variable.
 `CONFIG_DEBUG` | Debug output for each parsed line, only required for library testing.

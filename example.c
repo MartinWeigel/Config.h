@@ -14,12 +14,9 @@
 
 // Version: 2018-12-01
 
-#define CONFIG_IMPLEMENTATION       // Include implementation in this file
-//#define CONFIG_VERBOSE            // Prints all verbose messages to stderr
-//#define CONFIG_VERBOSE_DUPLICATE  // Print if config contains key duplicates to stderr
-//#define CONFIG_VERBOSE_MISSING    // Print if key is missing in config to stderr
-//#define CONFIG_VERBOSE_UNUSED     // Print if a config key is not used in application stderr
-//#define CONFIG_DEBUG              // Only for library testing
+#define CONFIG_IMPLEMENTATION
+//#define CONFIG_VERBOSE
+//#define CONFIG_NO_EXIT_ON_ERROR
 #include "Config.h"
 
 #define STRING_SIZE (80)
