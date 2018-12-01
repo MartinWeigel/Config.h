@@ -64,7 +64,7 @@ otherspace.key2 = 2
 
 - Single-header library for easy integration into existing projects
 - Human-readable configuration file format
-- Support of different variable types: `bool`, `int`, `double`, and `string`
+- Support of different variable types: `int`, `double`, `string`, `bool`, `int[8, 16, 32, 64]`, and `uint[8, 16, 32, 64]`
 - Simple interface with only one public function: `Config_load`
 - Support of function callbacks for advanced configuration control
 - Liberal license for free and commercial software

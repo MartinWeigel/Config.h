@@ -1,17 +1,20 @@
 # CONFIGURATION FILE EXAMPLE
 
 # Each config item should be written in its own line.
-# Format: <key> = <value>
+# Format: <key> = <value> # Inline comment
 # Keys should not contain any whitespaces.
 
 # All lines starting with # are comments.
 # Empty lines are allowed to structure the document.
 
 # Basic examples of different variable types
+aString    = Hello World
+aNewString = Hello New World
+
+anInt   = -2147483647
 aBool   = 1
-aString = Hello World
+aUInt64 = 18446744073709551615
 aDouble = 42.777
-anInt   = 42
 
 # Namespaces are just a prefix for the key
 namespace.key1  = value1

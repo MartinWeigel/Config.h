@@ -12,11 +12,13 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-// Version: 2018-10-09
+// Version: 2018-12-01
 
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
+#include <inttypes.h>
+#include <errno.h>
 
 // Internal type definition. Please use macros to create ConfigItems.
 typedef struct ConfigItem ConfigItem;
@@ -28,9 +30,9 @@ typedef enum ConfigType ConfigType;
 //******************************************************************************
 /**
  * Parses the input file. If the key of a line matches a ConfigItem, its value
- * pointer is set to the data inside the config file (for CONFIG_BOOL, CONFIG_INT,
- * CONFIG_DOUBLE, and CONFIG_STRING) or a function is called (CONFIG_CALLBACK).
- * For CONFIG_STRING, new memory will be allocated to hold the value. 
+ * pointer is set to the data inside the config file.
+ * For CONFIG_CALLBACK, a function is called (see Config_callback).
+ * For CONFIG_NEW_STRING, new memory will be allocated to hold the value. 
  * @filepath:
  *      Path to the configuration file.
  * @items:
@@ -52,12 +54,21 @@ typedef void Config_callback(void* sender, const char* key, const char* value);
 /*
  * Macro definitions to create config items
  */
-#define CONFIG_END()                            { CONFIGTYPE_END, NULL, NULL, NULL, false }
-#define CONFIG_BOOL(key, valuePtr)              { CONFIGTYPE_BOOL, key, valuePtr, NULL, false }
-#define CONFIG_INT(key, valuePtr)               { CONFIGTYPE_INT, key, valuePtr, NULL, false }
-#define CONFIG_DOUBLE(key, valuePtr)            { CONFIGTYPE_DOUBLE, key, valuePtr, NULL, false }
-#define CONFIG_STRING(key, valuePtr)            { CONFIGTYPE_STRING, key, valuePtr, NULL, false }
-#define CONFIG_CALLBACK(key, callback, sender)  { CONFIGTYPE_CALLBACK, key, sender, callback, false }
+#define CONFIG_END()                            { CONFIGTYPE_END, NULL, NULL, NULL, 0, false }
+#define CONFIG_BOOL(key, valuePtr)              { CONFIGTYPE_BOOL, key, valuePtr, NULL, 0, false }
+#define CONFIG_INT(key, valuePtr)               { CONFIGTYPE_INT, key, valuePtr, NULL, 0, false }
+#define CONFIG_INT8(key, valuePtr)              { CONFIGTYPE_INT8, key, valuePtr, NULL, 0, false }
+#define CONFIG_INT16(key, valuePtr)             { CONFIGTYPE_INT16, key, valuePtr, NULL, 0, false }
+#define CONFIG_INT32(key, valuePtr)             { CONFIGTYPE_INT32, key, valuePtr, NULL, 0, false }
+#define CONFIG_INT64(key, valuePtr)             { CONFIGTYPE_INT64, key, valuePtr, NULL, 0, false }
+#define CONFIG_UINT8(key, valuePtr)             { CONFIGTYPE_UINT8, key, valuePtr, NULL, 0, false }
+#define CONFIG_UINT16(key, valuePtr)            { CONFIGTYPE_UINT16, key, valuePtr, NULL, 0, false }
+#define CONFIG_UINT32(key, valuePtr)            { CONFIGTYPE_UINT32, key, valuePtr, NULL, 0, false }
+#define CONFIG_UINT64(key, valuePtr)            { CONFIGTYPE_UINT64, key, valuePtr, NULL, 0, false }
+#define CONFIG_DOUBLE(key, valuePtr)            { CONFIGTYPE_DOUBLE, key, valuePtr, NULL, 0, false }
+#define CONFIG_STRING(key, valuePtr, size)      { CONFIGTYPE_STRING, key, valuePtr, NULL, size, false }
+#define CONFIG_NEW_STRING(key, valuePtr)        { CONFIGTYPE_NEW_STRING, key, valuePtr, NULL, 0, false }
+#define CONFIG_CALLBACK(key, callback, sender)  { CONFIGTYPE_CALLBACK, key, sender, callback, 0, false }
 
 
 
@@ -67,10 +78,19 @@ typedef void Config_callback(void* sender, const char* key, const char* value);
 typedef enum ConfigType
 {
     CONFIGTYPE_END,
-    CONFIGTYPE_BOOL,
     CONFIGTYPE_INT,
+    CONFIGTYPE_INT8,
+    CONFIGTYPE_INT16,
+    CONFIGTYPE_INT32,
+    CONFIGTYPE_INT64,
+    CONFIGTYPE_BOOL,
+    CONFIGTYPE_UINT8,
+    CONFIGTYPE_UINT16,
+    CONFIGTYPE_UINT32,
+    CONFIGTYPE_UINT64,
     CONFIGTYPE_DOUBLE,
     CONFIGTYPE_STRING,
+    CONFIGTYPE_NEW_STRING,
     CONFIGTYPE_CALLBACK
 } ConfigType;
 
@@ -79,6 +99,7 @@ typedef struct ConfigItem {
     char* key;
     void *pointer;
     void *callback;
+    size_t stringSize; 
     bool isSet;
 } ConfigItem;
 
@@ -101,29 +122,94 @@ const int CONFIG_BUFFERSIZE = 256;
 const char CONFIG_EQUALSIGN = '=';
 const char CONFIG_COMMENTSIGN = '#';
 
+// Returns read long if it is in bounds, otherwise exits program
+int64_t CONFIG_signedNumberFromString(ConfigItem* item, char* string, int64_t min, int64_t max)
+{
+    errno = 0;
+    char* lastParsedChar = NULL;
+    long long longValue = strtoll(string, &lastParsedChar, 10);
+    // Check for errors
+    if(*lastParsedChar != '\0') {
+        printf("[CONFIG] Value for key '%s' is not a number: %s\n", item->key, string);
+        exit(EXIT_FAILURE);
+    }
+    if(errno == ERANGE || longValue < min || longValue > max) {
+        printf("[CONFIG] Value for key '%s' is out of bounds [%"PRId64", %"PRId64"]: %s\n", item->key, min, max, string);
+        exit(EXIT_FAILURE);        
+    }
+    return longValue;
+}
+
+// Returns read long if it is in bounds, otherwise exits program
+uint64_t CONFIG_unsignedNumberFromString(ConfigItem* item, char* string, uint64_t max)
+{
+    errno = 0;
+    char* lastParsedChar = NULL;
+    unsigned long long longValue = strtoull(string, &lastParsedChar, 10);
+    // Check for errors
+    if(*lastParsedChar != '\0') {
+        printf("[CONFIG] Value for key '%s' is not a number: %s\n", item->key, string);
+        exit(EXIT_FAILURE);
+    }
+    if(errno == ERANGE || string[0] == '-' || longValue > max) {
+        printf("[CONFIG] Value for key '%s' is out of bounds [0, %"PRIu64"]: %s\n", item->key, max, string);
+        exit(EXIT_FAILURE);        
+    }
+    return longValue;
+}
+
 void Config_handleItem(ConfigItem* item, char* value)
 {
     char* lastParsedChar = NULL;
     switch(item->type) {
-        case CONFIGTYPE_BOOL: {
-            int intValue = strtol(value, &lastParsedChar, 10);
-            // Check for errors
-            if(*lastParsedChar != '\0' || intValue < 0 || intValue > 1) {
-                printf("[CONFIG] Value for key '%s' is not an bool: %s\n", item->key, value);
-                exit(EXIT_FAILURE);
-            } 
-            bool* output = (bool*)item->pointer;
-            *output = intValue;
-            break;
-        }
         case CONFIGTYPE_INT: {
             int* output = (int*)item->pointer;
-            *output = strtol(value, &lastParsedChar, 10);
-            // Check for errors
-            if(*lastParsedChar != '\0') {
-                printf("[CONFIG] Value for key '%s' is not an integer: %s\n", item->key, value);
-                exit(EXIT_FAILURE);
-            }
+            *output = CONFIG_signedNumberFromString(item, value, INT_MIN, INT_MAX);
+            break;
+        }
+        case CONFIGTYPE_INT8: {
+            int8_t* output = (int8_t*)item->pointer;
+            *output = CONFIG_signedNumberFromString(item, value, INT8_MIN, INT8_MAX);
+            break;
+        }
+        case CONFIGTYPE_INT16: {
+            int16_t* output = (int16_t*)item->pointer;
+            *output = CONFIG_signedNumberFromString(item, value, INT16_MIN, INT16_MAX);
+            break;
+        }
+        case CONFIGTYPE_INT32: {
+            int32_t* output = (int32_t*)item->pointer;
+            *output = CONFIG_signedNumberFromString(item, value, INT32_MIN, INT32_MAX);
+            break;
+        }
+        case CONFIGTYPE_INT64: {
+            int64_t* output = (int64_t*)item->pointer;
+            *output = CONFIG_signedNumberFromString(item, value, INT64_MIN, INT64_MAX);
+            break;
+        }
+        case CONFIGTYPE_BOOL: {
+            bool* output = (bool*)item->pointer;
+            *output = CONFIG_unsignedNumberFromString(item, value, 1);
+            break;
+        }
+        case CONFIGTYPE_UINT8: {
+            uint8_t* output = (uint8_t*)item->pointer;
+            *output = CONFIG_unsignedNumberFromString(item, value, UINT8_MAX);
+            break;
+        }
+        case CONFIGTYPE_UINT16: {
+            uint16_t* output = (uint16_t*)item->pointer;
+            *output = CONFIG_unsignedNumberFromString(item, value, UINT16_MAX);
+            break;
+        }
+        case CONFIGTYPE_UINT32: {
+            uint32_t* output = (uint32_t*)item->pointer;
+            *output = CONFIG_unsignedNumberFromString(item, value, UINT32_MAX);
+            break;
+        }
+        case CONFIGTYPE_UINT64: {
+            uint64_t* output = (uint64_t*)item->pointer;
+            *output = CONFIG_unsignedNumberFromString(item, value, UINT64_MAX);
             break;
         }
         case CONFIGTYPE_DOUBLE: {
@@ -137,6 +223,16 @@ void Config_handleItem(ConfigItem* item, char* value)
             break;
         }
         case CONFIGTYPE_STRING: {
+            char* output = (char*)item->pointer;
+            // Check if allocated size (string + '\0') is big enough
+            if(strlen(value) + 1 > item->stringSize) {
+                printf("[CONFIG] String size is too large for key '%s' (size: %I64d): %s\n", item->key, item->stringSize, value);
+                exit(EXIT_FAILURE);
+            }
+            strcpy(output, value);
+            break;
+        }
+        case CONFIGTYPE_NEW_STRING: {
             char** output = (char**)item->pointer;
             *output = malloc(sizeof(value));
             strcpy(*output, value);
