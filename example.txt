@@ -11,13 +11,23 @@
 aString    = Hello World
 aNewString = Hello New World
 
-anInt   = -2147483647
-aBool   = 1
-aUInt64 = 18446744073709551615
-aDouble = 42.777
+anInt     = -2147483647
+aDouble   = 42.777
+aBool     = 1
+aCallback = 7
 
-# Namespaces are just a prefix for the key
-namespace.key1  = value1
-namespace.key2  = value2
-otherspace.key1 = 1
-otherspace.key2 = 2
+# Key prefix can be used as a namespace
+namespace.key1  = 101
+namespace.key2  = 102
+otherspace.key1 = 201
+otherspace.key2 = 202
+
+# Different integer types
+signed.int8    = -127
+signed.int16   = -32767
+signed.int32   = -2147483647
+signed.int64   = -9223372036854775807
+unsigned.int8  = 255
+unsigned.int16 = 65535
+unsigned.int32 = 4294967295
+unsigned.int64 = 18446744073709551615
