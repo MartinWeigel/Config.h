@@ -112,6 +112,13 @@ typedef struct ConfigItem {
 //******************************************************************************
 #ifdef CONFIG_IMPLEMENTATION
 
+#ifdef CONFIG_VERBOSE
+    // Activate all verbose messages
+    #define CONFIG_VERBOSE_UNUSED
+    #define CONFIG_VERBOSE_MISSING
+    #define CONFIG_VERBOSE_DUPLICATE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -277,7 +284,7 @@ void Config_load(const char* filepath, ConfigItem* items)
 
     uint32_t lineNumber = 0;
     char buffer[CONFIG_BUFFERSIZE];
-    #ifdef CONFIG_VERBOSE
+    #ifdef CONFIG_VERBOSE_UNUSED
     bool handlerFound;
     #endif
     while(fgets(buffer, CONFIG_BUFFERSIZE, file)) {
@@ -330,7 +337,7 @@ void Config_load(const char* filepath, ConfigItem* items)
         #endif
 
         // Check if key is in specified items
-        #ifdef CONFIG_VERBOSE
+        #ifdef CONFIG_VERBOSE_UNUSED
         handlerFound = false;
         #endif
         ConfigItem* item = items;
@@ -342,35 +349,35 @@ void Config_load(const char* filepath, ConfigItem* items)
                 #endif  
 
                 // Check if key was already set
-                #ifdef CONFIG_VERBOSE
+                #ifdef CONFIG_VERBOSE_DUPLICATE
                 if(item->isSet) {
                     fprintf(stderr, "[CONFIG] Key duplicate in line %d: %s\n", lineNumber, keyPtr);
                 }
                 #endif
 
-                #ifdef CONFIG_VERBOSE
-                item->isSet = true;
+                #ifdef CONFIG_VERBOSE_UNUSED
                 handlerFound = true;
                 #endif
 
                 // Handle item depending on its type
                 Config_handleItem(item, valPtr);  
+                item->isSet = true;
                 break;
             }
             item++;
         }
 
         // Check if all handlers were set or print error
-        #ifdef CONFIG_VERBOSE
+        #ifdef CONFIG_VERBOSE_UNUSED
         if(!handlerFound) {
-            fprintf(stderr, "[CONFIG] Key in line %d not handled: %s\n", lineNumber, keyPtr);
+            fprintf(stderr, "[CONFIG] Key in line %d not used: %s\n", lineNumber, keyPtr);
         }
         #endif
     }
     fclose(file);
 
     // Check that all items were successfully read from config
-    #ifdef CONFIG_VERBOSE
+    #ifdef CONFIG_VERBOSE_MISSING
     ConfigItem* item = items;
     while(item->type != CONFIGTYPE_END) {
         if(!item->isSet) {
