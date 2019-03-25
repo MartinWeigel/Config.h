@@ -1,9 +1,9 @@
 CC = gcc
 CFLAGS += -std=c11 -Wall -Wextra
-CLIBS = 
+CLIBS =
 FILES = example.c
 
-ifeq ($(OS),Windows_NT) 
+ifeq ($(OS),Windows_NT)
 APPLICATION_NAME = example.exe
 RM = del /Q /F
 else

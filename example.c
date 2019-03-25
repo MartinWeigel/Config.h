@@ -68,7 +68,7 @@ int main()
         CONFIG_UINT16("unsigned.int16", &cUInt16),
         CONFIG_UINT32("unsigned.int32", &cUInt32),
         CONFIG_UINT64("unsigned.int64", &cUInt64),
-        
+
         CONFIG_DOUBLE("aDouble", &cDouble),
         CONFIG_BOOL("aBool", &cBool),
         CONFIG_CALLBACK("aCallback", &exampleCallback, &callbackResult),

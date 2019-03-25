@@ -19,6 +19,8 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <errno.h>
+#include <limits.h>
+#include <stddef.h>
 
 // Internal type definition. Please use macros to create ConfigItems.
 typedef struct ConfigItem ConfigItem;
@@ -32,7 +34,7 @@ typedef enum ConfigType ConfigType;
  * Parses the input file. If the key of a line matches a ConfigItem, its value
  * pointer is set to the data inside the config file.
  * For CONFIG_CALLBACK, a function is called (see Config_callback).
- * For CONFIG_NEW_STRING, new memory will be allocated for the value. 
+ * For CONFIG_NEW_STRING, new memory will be allocated for the value.
  * @filepath:
  *      Path to the configuration file.
  * @items:
@@ -94,12 +96,13 @@ typedef enum ConfigType
     CONFIGTYPE_CALLBACK
 } ConfigType;
 
-typedef struct ConfigItem {
+typedef struct ConfigItem
+{
     ConfigType type;
     char* key;
     void *pointer;
     void *callback;
-    size_t stringSize; 
+    size_t stringSize;
     bool isSet;
 } ConfigItem;
 
@@ -164,7 +167,7 @@ bool CONFIG_uIntFromString(ConfigItem* item, char* string, uint64_t max, uint64_
     // Check for errors
     if(*lastParsedChar != '\0') {
         printf("[CONFIG] Value for key '%s' is not a number: %s\n", item->key, string);
-        CONFIG_EXIT();  
+        CONFIG_EXIT();
     }
     if(errno == ERANGE || string[0] == '-' || longValue > max) {
         printf("[CONFIG] Value for key '%s' is out of bounds [0, %"PRIu64"]: %s\n", item->key, max, string);
@@ -205,7 +208,7 @@ void Config_handleItem(ConfigItem* item, char* value)
             }
             break;
         case CONFIGTYPE_INT64:
-            if(CONFIG_IntFromString(item, value, INT64_MIN, INT64_MAX, &sResult)) {   
+            if(CONFIG_IntFromString(item, value, INT64_MIN, INT64_MAX, &sResult)) {
                 int64_t* output = item->pointer;
                 *output = sResult;
             }
@@ -255,7 +258,7 @@ void Config_handleItem(ConfigItem* item, char* value)
         case CONFIGTYPE_STRING: {
             // Check if allocated size (string + '\0') is big enough
             if(strlen(value) + 1 > item->stringSize) {
-                printf("[CONFIG] String size is too large for key '%s' (size: %I64d): %s\n", item->key, item->stringSize, value);
+                printf("[CONFIG] String size is too large for key '%s' (size: %zu): %s\n", item->key, item->stringSize, value);
                 CONFIG_EXIT();
             } else {
                 char* output = (char*)item->pointer;
@@ -273,7 +276,7 @@ void Config_handleItem(ConfigItem* item, char* value)
             Config_callback* output = (Config_callback*)item->callback;
             output(item->pointer, item->key, value);
             break;
-        } 
+        }
         default:
             fprintf(stderr, "[CONFIG] Invalid config type: %d\n", item->type);
             CONFIG_EXIT();
@@ -368,10 +371,10 @@ void Config_load(const char* filepath, ConfigItem* items)
         ConfigItem* item = items;
         while(item->type != CONFIGTYPE_END) {
             // Check if item matches the key
-            if(strcmp(item->key, keyPtr) == 0) {  
+            if(strcmp(item->key, keyPtr) == 0) {
                 #ifdef CONFIG_DEBUG
                 fprintf(stderr, "[CONFIG] Line %d: Found handler for (%s : %s)\n", lineNumber, keyPtr, valPtr);
-                #endif  
+                #endif
 
                 // Check if key was already set
                 #ifdef CONFIG_VERBOSE_DUPLICATE
@@ -385,7 +388,7 @@ void Config_load(const char* filepath, ConfigItem* items)
                 #endif
 
                 // Handle item depending on its type
-                Config_handleItem(item, valPtr);  
+                Config_handleItem(item, valPtr);
                 item->isSet = true;
                 break;
             }
